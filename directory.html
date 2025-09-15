@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nostr Directory - Enhanced Client</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .editor-slot { 
+            border: 2px dashed #d1d5db; 
+            transition: all 0.2s;
+        }
+        .editor-slot.filled { 
+            border-color: #10b981; 
+            background-color: #f0fdf4;
+        }
+        .relay-option {
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .relay-option.selected {
+            border-color: #3b82f6;
+            background-color: #dbeafe;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Nostr Directory</h1>
+            <p class="text-gray-600">Decentralized, Collaborative Business & Project Listings</p>
+            <p class="text-sm text-blue-600 mt-2">Using Kind 30403 with NIP-68 Event-Owned Keys & Multi-WoT Protection</p>
+        </div>
+
+        <!-- User Connection Status -->
+        <div id="connection-status" class="mb-6 p-4 rounded-lg border">
+            <div class="flex items-center justify-between">
+                <div id="user-info" class="text-gray-600">
+                    Not connected to Nostr
+                </div>
+                <div class="space-x-2">
+                    <button id="connect-wallet" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+                        Connect Nostr Wallet
+                    </button>
+                    <button id="non-nostr-mode" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+                        Create Entry (Non-Nostr User)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Entry Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-bold mb-6">Create Directory Entry</h2>
+            
+            <!-- Entry Type Selection -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Entry Type</label>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button class="entry-type-btn p-3 border rounded-lg hover:bg-blue-50" data-type="business">
+                        <div class="text-xl mb-1">🏢</div>
+                        <div class="text-sm font-medium">Business</div>
+                    </button>
+                    <button class="entry-type-btn p-3 border rounded-lg hover:bg-blue-50" data-type="product">
+                        <div class="text-xl mb-1">📱</div>
+                        <div class="text-sm font-medium">Product</div>
+                    </button>
+                    <button class="entry-type-btn p-3 border rounded-lg hover:bg-blue-50" data-type="project">
+                        <div class="text-xl mb-1">🚀</div>
+                        <div class="text-sm font-medium">Project</div>
+                    </button>
+                    <button class="entry-type-btn p-3 border rounded-lg hover:bg-blue-50" data-type="follow-pack">
+                        <div class="text-xl mb-1">👥</div>
+                        <div class="text-sm font-medium">Follow Pack</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Basic Information -->
+            <div class="grid md:grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                    <input type="text" id="entry-title" class="w-full p-3 border rounded-lg" placeholder="Entry name">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Website URL</label>
+                    <input type="url" id="entry-url" class="w-full p-3 border rounded-lg" placeholder="https://example.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
+                    <input type="email" id="entry-contact" class="w-full p-3 border rounded-lg" placeholder="contact@example.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                    <input type="text" id="entry-location" class="w-full p-3 border rounded-lg" placeholder="San Francisco, CA">
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                <textarea id="entry-description" rows="3" class="w-full p-3 border rounded-lg" placeholder="Describe your business, product, or project..."></textarea>
+            </div>
+
+            <!-- Hierarchical Categories -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Categories (Hierarchical)</label>
+                <div id="category-builder" class="space-y-3">
+                    <div class="flex flex-wrap gap-2 mb-2" id="selected-categories"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <select id="primary-category" class="p-2 border rounded">
+                            <option value="">Select Primary Category</option>
+                            <option value="food">Food & Restaurant</option>
+                            <option value="tech">Technology</option>
+                            <option value="retail">Retail & Shopping</option>
+                            <option value="services">Services</option>
+                            <option value="online">Online Business</option>
+                            <option value="bitcoin">Bitcoin</option>
+                            <option value="developers">Developers</option>
+                        </select>
+                        <select id="sub-category" class="p-2 border rounded" disabled>
+                            <option value="">Select Sub-Category</option>
+                        </select>
+                        <select id="specific-category" class="p-2 border rounded" disabled>
+                            <option value="">Select Specific</option>
+                        </select>
+                    </div>
+                    <button type="button" id="add-category" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700" disabled>
+                        Add Category Path
+                    </button>
+                </div>
+            </div>
+
+            <!-- WoT Relays Selection (Issue #1 Fix) -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Web of Trust Relays</label>
+                <p class="text-sm text-gray-500 mb-3">Select WoT relays for spam protection. First relay is default.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div class="relay-option p-3 rounded-lg cursor-pointer selected" data-relay="wss://wot.directory.nostr">
+                        <div class="font-medium text-sm">🏛️ Primary WoT Directory</div>
+                        <div class="text-xs text-gray-600">wss://wot.directory.nostr</div>
+                        <div class="text-xs text-green-600">DEFAULT</div>
+                    </div>
+                    <div class="relay-option p-3 rounded-lg cursor-pointer" data-relay="wss://bitcoin.wot.nostr">
+                        <div class="font-medium text-sm">₿ Bitcoin WoT</div>
+                        <div class="text-xs text-gray-600">wss://bitcoin.wot.nostr</div>
+                    </div>
+                    <div class="relay-option p-3 rounded-lg cursor-pointer" data-relay="wss://dev.wot.nostr">
+                        <div class="font-medium text-sm">👨‍💻 Developer WoT</div>
+                        <div class="text-xs text-gray-600">wss://dev.wot.nostr</div>
+                    </div>
+                    <div class="relay-option p-3 rounded-lg cursor-pointer" data-relay="wss://business.wot.nostr">
+                        <div class="font-medium text-sm">🏪 Business WoT</div>
+                        <div class="text-xs text-gray-600">wss://business.wot.nostr</div>
+                    </div>
+                    <div class="relay-option p-3 rounded-lg cursor-pointer" data-relay="wss://community.wot.nostr">
+                        <div class="font-medium text-sm">🌍 Community WoT</div>
+                        <div class="text-xs text-gray-600">wss://community.wot.nostr</div>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <input type="text" id="custom-relay" class="w-full p-2 border rounded-lg" placeholder="Add custom WoT relay (wss://...)">
+                    <button id="add-custom-relay" class="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        Add Custom Relay
+                    </button>
+                </div>
+            </div>
+
+            <!-- Governance & Editor Management (Issues #2, #5, #6 Fix) -->
+            <div class="mb-6 border-t pt-6">
+                <h3 class="text-lg font-semibold mb-4">Ownership & Collaboration</h3>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Governance Model</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="radio" name="governance" value="solo" class="mr-2" checked>
+                            <span class="text-sm">Solo - Only I can edit</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="governance" value="collaborative" class="mr-2">
+                            <span class="text-sm">Collaborative - I invite specific editors (max 5)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="governance" value="relay-owned" class="mr-2">
+                            <span class="text-sm">Relay Owned - WoT relay managers control this entry</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Editor Management (Max 5 - Issue #6 Fix) -->
+                <div id="editor-section" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        Invite Editors (Maximum 5)
+                    </label>
+                    <div class="space-y-2 mb-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2" id="editor-slots">
+                            <!-- Editor slots will be generated here -->
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="new-editor-pubkey" class="flex-1 p-2 border rounded-lg" 
+                               placeholder="Enter editor's pubkey (npub... or hex)">
+                        <button id="add-editor" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                            Add Editor
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        Editors will receive encrypted keys to modify this entry
+                    </p>
+                </div>
+
+                <!-- Non-Nostr User Section (Issue #5 Fix) -->
+                <div id="non-nostr-section" class="hidden mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <h4 class="font-medium text-yellow-800 mb-2">Creating as Non-Nostr User</h4>
+                    <p class="text-sm text-yellow-700 mb-3">
+                        Since you're not connected with a Nostr wallet, this entry will be owned by the relay's pubkey. 
+                        You can claim ownership later by creating a Nostr identity and petitioning the relay managers.
+                    </p>
+                    <div class="space-y-2">
+                        <div>
+                            <label class="block text-sm font-medium text-yellow-800">Your Email (for ownership claims)</label>
+                            <input type="email" id="non-nostr-email" class="w-full p-2 border rounded-lg" 
+                                   placeholder="your.email@example.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-yellow-800">Phone Number (optional)</label>
+                            <input type="tel" id="non-nostr-phone" class="w-full p-2 border rounded-lg" 
+                                   placeholder="+1 (555) 123-4567">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Follow Pack Specific Fields -->
+            <div id="follow-pack-section" class="hidden mb-6 border-t pt-6">
+                <h3 class="text-lg font-semibold mb-4">Follow Pack Members</h3>
+                <div id="follow-list" class="space-y-2 mb-4">
+                    <!-- Follow entries will be added here -->
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="follow-pubkey" class="flex-1 p-2 border rounded-lg" 
+                           placeholder="Member pubkey (npub... or hex)">
+                    <input type="text" id="follow-alias" class="w-32 p-2 border rounded-lg" 
+                           placeholder="Alias">
+                    <button id="add-follow" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                        Add Member
+                    </button>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-4 pt-6 border-t">
+                <button id="create-entry" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium">
+                    Create Directory Entry
+                </button>
+                <button id="clear-form" class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                    Clear Form
+                </button>
+            </div>
+        </div>
+
+        <!-- Directory Listing -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Directory Entries</h2>
+                <div class="flex gap-4">
+                    <select id="filter-type" class="p-2 border rounded-lg">
+                        <option value="">All Types</option>
+                        <option value="business">Business</option>
+                        <option value="product">Product</option>
+                        <option value="project">Project</option>
+                        <option value="follow-pack">Follow Pack</option>
+                    </select>
+                    <input type="text" id="search-entries" class="p-2 border rounded-lg" placeholder="Search entries...">
+                </div>
+            </div>
+
+            <div id="entries-container" class="space-y-4">
+                <!-- Directory entries will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="entry-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg max-w-2xl w-full max-h-90vh overflow-y-auto">
+                <div id="modal-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulated Nostr connection state
+        let nostrConnected = false;
+        let userPubkey = null;
+        let entries = [];
+        let selectedRelays = ['wss://wot.directory.nostr'];
+        let editors = [];
+        let followMembers = [];
+        let categories = [];
+        let nonNostrMode = false;
+
+        // Category hierarchies
+        const categoryHierarchy = {
+            food: {
+                restaurant: ['italian', 'mexican', 'asian', 'american', 'fast-food'],
+                grocery: ['organic', 'specialty', 'chain'],
+                delivery: ['meal-kit', 'restaurant-delivery', 'grocery-delivery']
+            },
+            tech: {
+                software: ['mobile-app', 'web-app', 'desktop', 'saas'],
+                hardware: ['computers', 'phones', 'accessories'],
+                services: ['consulting', 'development', 'support']
+            },
+            retail: {
+                clothing: ['mens', 'womens', 'kids', 'accessories'],
+                electronics: ['computers', 'phones', 'gaming'],
+                home: ['furniture', 'decor', 'appliances']
+            },
+            services: {
+                professional: ['legal', 'accounting', 'consulting'],
+                personal: ['cleaning', 'beauty', 'fitness'],
+                business: ['marketing', 'design', 'development']
+            },
+            online: {
+                ecommerce: ['marketplace', 'store', 'dropshipping'],
+                content: ['blog', 'newsletter', 'course'],
+                platform: ['social', 'community', 'tools']
+            },
+            bitcoin: {
+                services: ['exchange', 'wallet', 'merchant'],
+                education: ['course', 'blog', 'podcast'],
+                development: ['lightning', 'mining', 'protocol']
+            },
+            developers: {
+                speciality: ['frontend', 'backend', 'mobile', 'blockchain'],
+                language: ['javascript', 'python', 'rust', 'go'],
+                framework: ['react', 'vue', 'django', 'rails']
+            }
+        };
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+            generateEditorSlots();
+            loadSampleEntries();
+            updateConnectionStatus();
+        });
+
+        function initializeEventListeners() {
+            // Connection buttons
+            document.getElementById('connect-wallet').addEventListener('click', connectNostrWallet);
+            document.getElementById('non-nostr-mode').addEventListener('click', toggleNonNostrMode);
+
+            // Entry type selection
+            document.querySelectorAll('.entry-type-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => selectEntryType(e.target.closest('.entry-type-btn').dataset.type));
+            });
+
+            // Category system
+            document.getElementById('primary-category').addEventListener('change', updateSubCategories);
+            document.getElementById('sub-category').addEventListener('change', updateSpecificCategories);
+            document.getElementById('add-category').addEventListener('click', addCategoryPath);
+
+            // Relay selection
+            document.querySelectorAll('.relay-option').forEach(option => {
+                option.addEventListener('click', (e) => toggleRelay(e.currentTarget.dataset.relay, e.currentTarget));
+            });
+            document.getElementById('add-custom-relay').addEventListener('click', addCustomRelay);
+
+            // Governance
+            document.querySelectorAll('input[name="governance"]').forEach(radio => {
+                radio.addEventListener('change', updateGovernanceUI);
+            });
+
+            // Editor management
+            document.getElementById('add-editor').addEventListener('click', addEditor);
+
+            // Follow pack
+            document.getElementById('add-follow').addEventListener('click', addFollowMember);
+
+            // Form actions
+            document.getElementById('create-entry').addEventListener('click', createDirectoryEntry);
+            document.getElementById('clear-form').addEventListener('click', clearForm);
+
+            // Search and filter
+            document.getElementById('search-entries').addEventListener('input', filterEntries);
+            document.getElementById('filter-type').addEventListener('change', filterEntries);
+        }
+
+        function connectNostrWallet() {
+            // Simulate Nostr wallet connection
+            nostrConnected = true;
+            userPubkey = 'npub1' + Math.random().toString(36).substring(2, 50);
+            nonNostrMode = false;
+            updateConnectionStatus();
+            updateGovernanceUI();
+        }
+
+        function toggleNonNostrMode() {
+            nonNostrMode = !nonNostrMode;
+            nostrConnected = false;
+            userPubkey = null;
+            updateConnectionStatus();
+            updateGovernanceUI();
+        }
+
+        function updateConnectionStatus() {
+            const statusDiv = document.getElementById('connection-status');
+            const userInfo = document.getElementById('user-info');
+            
+            if (nonNostrMode) {
+                statusDiv.className = 'mb-6 p-4 rounded-lg border border-yellow-300 bg-yellow-50';
+                userInfo.innerHTML = '⚠️ Creating as Non-Nostr User - Entry will be relay-owned';
+            } else if (nostrConnected) {
+                statusDiv.className = 'mb-6 p-4 rounded-lg border border-green-300 bg-green-50';
+                userInfo.innerHTML = `✅ Connected: ${userPubkey.substring(0, 20)}...`;
+            } else {
+                statusDiv.className = 'mb-6 p-4 rounded-lg border border-gray-300 bg-gray-50';
+                userInfo.innerHTML = '❌ Not connected to Nostr';
+            }
+        }
+
+        function selectEntryType(type) {
+            // Update UI
+            document.querySelectorAll('.entry-type-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'bg-blue-50');
+            });
+            event.target.closest('.entry-type-btn').classList.add('border-blue-500', 'bg-blue-50');
+
+            // Show/hide follow pack section
+            const followSection = document.getElementById('follow-pack-section');
+            followSection.classList.toggle('hidden', type !== 'follow-pack');
+        }
+
+        function updateSubCategories() {
+            const primary = document.getElementById('primary-category').value;
+            const subSelect = document.getElementById('sub-category');
+            const specificSelect = document.getElementById('specific-category');
+            
+            subSelect.innerHTML = '<option value="">Select Sub-Category</option>';
+            specificSelect.innerHTML = '<option value="">Select Specific</option>';
+            
+            if (primary && categoryHierarchy[primary]) {
+                subSelect.disabled = false;
+                Object.keys(categoryHierarchy[primary]).forEach(sub => {
+                    const option = document.createElement('option');
+                    option.value = sub;
+                    option.textContent = sub.charAt(0).toUpperCase() + sub.slice(1).replace('-', ' ');
+                    subSelect.appendChild(option);
+                });
+            } else {
+                subSelect.disabled = true;
+                specificSelect.disabled = true;
+            }
+            
+            updateAddCategoryButton();
+        }
+
+        function updateSpecificCategories() {
+            const primary = document.getElementById('primary-category').value;
+            const sub = document.getElementById('sub-category').value;
+            const specificSelect = document.getElementById('specific-category');
+            
+            specificSelect.innerHTML = '<option value="">Select Specific</option>';
+            
+            if (primary && sub && categoryHierarchy[primary][sub]) {
+                specificSelect.disabled = false;
+                categoryHierarchy[primary][sub].forEach(specific => {
+                    const option = document.createElement('option');
+                    option.value = specific;
+                    option.textContent = specific.charAt(0).toUpperCase() + specific.slice(1).replace('-', ' ');
+                    specificSelect.appendChild(option);
+                });
+            } else {
+                specificSelect.disabled = true;
+            }
+            
+            updateAddCategoryButton();
+        }
+
+        function updateAddCategoryButton() {
+            const primary = document.getElementById('primary-category').value;
+            const sub = document.getElementById('sub-category').value;
+            const addBtn = document.getElementById('add-category');
+            
+            addBtn.disabled = !primary || (!sub && categoryHierarchy[primary]);
+        }
+
+        function addCategoryPath() {
+            const primary = document.getElementById('primary-category').value;
+            const sub = document.getElementById('sub-category').value;
+            const specific = document.getElementById('specific-category').value;
+            
+            if (!primary) return;
+            
+            let categoryPath = primary;
+            if (sub) categoryPath += '/' + sub;
+            if (specific) categoryPath += '/' + specific;
+            
+            if (!categories.includes(categoryPath)) {
+                categories.push(categoryPath);
+                updateCategoryDisplay();
+            }
+            
+            // Reset selectors
+            document.getElementById('primary-category').value = '';
+            document.getElementById('sub-category').innerHTML = '<option value="">Select Sub-Category</option>';
+            document.getElementById('sub-category').disabled = true;
+            document.getElementById('specific-category').innerHTML = '<option value="">Select Specific</option>';
+            document.getElementById('specific-category').disabled = true;
+            updateAddCategoryButton();
+        }
+
+        function updateCategoryDisplay() {
+            const container = document.getElementById('selected-categories');
+            container.innerHTML = '';
+            
+            categories.forEach((category, index) => {
+                const tag = document.createElement('span');
+                tag.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800';
+                tag.innerHTML = `
+                    ${category}
+                    <button onclick="removeCategory(${index})" class="ml-1 text-blue-600 hover:text-blue-800">×</button>
+                `;
+                container.appendChild(tag);
+            });
+        }
+
+        function removeCategory(index) {
+            categories.splice(index, 1);
+            updateCategoryDisplay();
+        }
+
+        function toggleRelay(relayUrl, element) {
+            const isSelected = element.classList.contains('selected');
+            
+            if (isSelected) {
+                // Don't allow removing the default relay
+                if (selectedRelays[0] === relayUrl) {
+                    alert('Cannot remove the default relay');
+                    return;
+                }
+                element.classList.remove('selected');
+                selectedRelays = selectedRelays.filter(r => r !== relayUrl);
+            } else {
+                element.classList.add('selected');
+                selectedRelays.push(relayUrl);
+            }
+        }
+
+        function addCustomRelay() {
+            const input = document.getElementById('custom-relay');
+            const relayUrl = input.value.trim();
+            
+            if (!relayUrl.startsWith('wss://')) {
+                alert('Relay URL must start with wss://');
+                return;
+            }
+            
+            if (selectedRelays.includes(relayUrl)) {
+                alert('Relay already selected');
+                return;
+            }
+            
+            selectedRelays.push(relayUrl);
+            
+            // Add to UI
+            const container = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3');
+            const option = document.createElement('div');
+            option.className = 'relay-option p-3 rounded-lg cursor-pointer selected';
+            option.dataset.relay = relayUrl;
+            option.innerHTML = `
+                <div class="font-medium text-sm">🔧 Custom Relay</div>
+                <div class="text-xs text-gray-600">${relayUrl}</div>
+            `;
+            option.addEventListener('click', (e) => toggleRelay(relayUrl, e.currentTarget));
+            container.appendChild(option);
+            
+            input.value = '';
+        }
+
+        function updateGovernanceUI() {
+            const governance = document.querySelector('input[name="governance"]:checked')?.value || 'solo';
+            const editorSection = document.getElementById('editor-section');
+            const nonNostrSection = document.getElementById('non-nostr-section');
+            
+            editorSection.classList.toggle('hidden', governance !== 'collaborative');
+            nonNostrSection.classList.toggle('hidden', !nonNostrMode);
+            
+            // Update radio button states based on connection
+            const radios = document.querySelectorAll('input[name="governance"]');
+            if (nonNostrMode) {
+                radios.forEach(radio => {
+                    if (radio.value === 'relay-owned') {
+                        radio.checked = true;
+                    } else {
+                        radio.disabled = true;
+                    }
+                });
+            } else {
+                radios.forEach(radio => radio.disabled = false);
+            }
+        }
+
+        function generateEditorSlots() {
+            const container = document.getElementById('editor-slots');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < 5; i++) {
+                const slot = document.createElement('div');
+                slot.className = `editor-slot p-3 rounded-lg text-center text-sm ${editors[i] ? 'filled' : ''}`;
+                slot.innerHTML = editors[i] ? 
+                    `<div class="font-medium">${editors[i].substring(0, 12)}...</div><button onclick="removeEditor(${i})" class="text-red-600 text-xs">Remove</button>` :
+                    `<div class="text-gray-400">Editor Slot ${i + 1}</div>`;
+                container.appendChild(slot);
+            }
+        }
+
+        function addEditor() {
+            if (editors.length >= 5) {
+                alert('Maximum 5 editors allowed');
+                return;
+            }
+            
+            const input = document.getElementById('new-editor-pubkey');
+            const pubkey = input.value.trim();
+            
+            if (!pubkey) {
+                alert('Please enter a pubkey');
+                return;
+            }
+            
+            if (editors.includes(pubkey)) {
+                alert('Editor already added');
+                return;
+            }
+            
+            editors.push(pubkey);
+            generateEditorSlots();
+            input.value = '';
+        }
+
+        function removeEditor(index) {
+            editors.splice(index, 1);
+            generateEditorSlots();
+        }
+
+        function addFollowMember() {
+            const pubkey = document.getElementById('follow-pubkey').value.trim();
+            const alias = document.getElementById('follow-alias').value.trim();
+            
+            if (!pubkey || !alias) {
+                alert('Please enter both pubkey and alias');
+                return;
+            }
+            
+            followMembers.push({ pubkey, alias });
+            updateFollowDisplay();
+            
+            document.getElementById('follow-pubkey').value = '';
+            document.getElementById('follow-alias').value = '';
+        }
+
+        function updateFollowDisplay() {
+            const container = document.getElementById('follow-list');
+            container.innerHTML = '';
+            
+            followMembers.forEach((member, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-2 bg-gray-50 rounded';
+                div.innerHTML = `
+                    <div>
+                        <span class="font-medium">${member.alias}</span>
+                        <span class="text-xs text-gray-500 ml-2">${member.pubkey.substring(0, 20)}...</span>
+                    </div>
+                    <button onclick="removeFollowMember(${index})" class="text-red-600 text-sm">Remove</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function removeFollowMember(index) {
+            followMembers.splice(index, 1);
+            updateFollowDisplay();
+        }
+
+        function createDirectoryEntry() {
+            const title = document.getElementById('entry-title').value.trim();
+            const description = document.getElementById('entry-description').value.trim();
+            
+            if (!title || !description) {
+                alert('Please fill in required fields (Title and Description)');
+                return;
+            }
+            
+            if (categories.length === 0) {
+                alert('Please add at least one category');
+                return;
+            }
+            
+            const selectedType = document.querySelector('.entry-type-btn.border-blue-500')?.dataset.type;
+            if (!selectedType) {
+                alert('Please select an entry type');
+                return;
+            }
+            
+            const governance = document.querySelector('input[name="governance"]:checked')?.value || 'solo';
+            
+            // Generate directory entry (Kind 30403)
+            const entry = createKind30403Event({
+                title,
+                description,
+                type: selectedType,
+                url: document.getElementById('entry-url').value.trim(),
+                contact: document.getElementById('entry-contact').value.trim(),
+                location: document.getElementById('entry-location').value.trim(),
+                categories,
+                governance,
+                editors,
+                followMembers,
+                selectedRelays,
+                nonNostrMode,
+                nonNostrEmail: document.getElementById('non-nostr-email')?.value.trim(),
+                nonNostrPhone: document.getElementById('non-nostr-phone')?.value.trim()
+            });
+            
+            // Simulate publishing to relays
+            publishToRelays(entry);
+            
+            // Add to local entries
+            entries.unshift(entry);
+            renderEntries();
+            
+            alert('Directory entry created successfully!');
+            clearForm();
+        }
+
+        function createKind30403Event(data) {
+            // Generate event keypair (NIP-68 style)
+            const eventKeyPair = {
+                publicKey: generateRandomKey(),
+                privateKey: generateRandomKey()
+            };
+            
+            const dTag = 'entry_' + Date.now() + '_' + Math.random().toString(36).substring(7);
+            
+            // Build tags array
+            const tags = [
+                ['d', dTag],
+                ['title', data.title],
+                ['type', data.type],
+                ['description', data.description]
+            ];
+            
+            // Add hierarchical categories
+            data.categories.forEach(cat => {
+                tags.push(['category', cat]);
+            });
+            
+            // Add optional fields
+            if (data.url) tags.push(['url', data.url]);
+            if (data.contact) tags.push(['contact', data.contact]);
+            if (data.location) tags.push(['location', data.location]);
+            
+            // Add relay tags
+            data.selectedRelays.forEach(relay => {
+                tags.push(['relay', relay]);
+            });
+            
+            // Add governance and ownership
+            tags.push(['governance', data.governance]);
+            
+            if (data.nonNostrMode) {
+                // Non-Nostr user - owned by relay
+                tags.push(['owner', 'relay_collective']);
+                tags.push(['created-by', 'non-nostr-user']);
+                if (data.nonNostrEmail) tags.push(['creator-claim', data.nonNostrEmail]);
+                if (data.nonNostrPhone) tags.push(['creator-phone', data.nonNostrPhone]);
+                
+                // Add relay managers as editors
+                const relayManagers = ['relay_manager_1', 'relay_manager_2', 'relay_manager_3'];
+                relayManagers.forEach(manager => {
+                    tags.push(['p', manager, '', 'encrypted_edit_key_for_' + manager]);
+                });
+            } else {
+                // Nostr user
+                tags.push(['owner', userPubkey]);
+                tags.push(['created-by', 'nostr-user']);
+                
+                // Add creator as editor
+                tags.push(['p', userPubkey, '', 'encrypted_edit_key_for_creator']);
+                
+                // Add additional editors if collaborative
+                if (data.governance === 'collaborative') {
+                    data.editors.forEach(editor => {
+                        tags.push(['p', editor, '', 'encrypted_edit_key_for_' + editor.substring(0, 8)]);
+                    });
+                } else if (data.governance === 'relay-owned') {
+                    // Add relay managers
+                    const relayManagers = ['relay_manager_1', 'relay_manager_2'];
+                    relayManagers.forEach(manager => {
+                        tags.push(['p', manager, '', 'encrypted_edit_key_for_' + manager]);
+                    });
+                }
+            }
+            
+            // Add follow pack members
+            if (data.type === 'follow-pack') {
+                data.followMembers.forEach(member => {
+                    tags.push(['follow', member.pubkey, 'wss://relay.com', member.alias]);
+                });
+            }
+            
+            return {
+                id: generateRandomKey(),
+                kind: 30403,
+                pubkey: eventKeyPair.publicKey,  // Event owns itself
+                created_at: Math.floor(Date.now() / 1000),
+                tags: tags,
+                content: '',
+                sig: 'event_signature_' + generateRandomKey().substring(0, 16),
+                
+                // Additional metadata for UI
+                _metadata: {
+                    isOwner: !data.nonNostrMode && userPubkey === data.owner,
+                    canEdit: true, // Simulate edit permissions
+                    relays: data.selectedRelays,
+                    governance: data.governance
+                }
+            };
+        }
+
+        function publishToRelays(entry) {
+            console.log('Publishing to relays:', entry._metadata.relays);
+            console.log('Entry structure:', {
+                kind: entry.kind,
+                governance: entry._metadata.governance,
+                categories: entry.tags.filter(t => t[0] === 'category').map(t => t[1]),
+                editors: entry.tags.filter(t => t[0] === 'p').length,
+                relays: entry.tags.filter(t => t[0] === 'relay').map(t => t[1])
+            });
+            
+            // Simulate relay publishing success
+            return true;
+        }
+
+        function clearForm() {
+            document.getElementById('entry-title').value = '';
+            document.getElementById('entry-description').value = '';
+            document.getElementById('entry-url').value = '';
+            document.getElementById('entry-contact').value = '';
+            document.getElementById('entry-location').value = '';
+            
+            categories = [];
+            updateCategoryDisplay();
+            
+            editors = [];
+            generateEditorSlots();
+            
+            followMembers = [];
+            updateFollowDisplay();
+            
+            // Reset entry type
+            document.querySelectorAll('.entry-type-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'bg-blue-50');
+            });
+            
+            // Reset governance
+            document.querySelector('input[name="governance"][value="solo"]').checked = true;
+            updateGovernanceUI();
+            
+            // Reset category selectors
+            document.getElementById('primary-category').value = '';
+            updateSubCategories();
+        }
+
+        function loadSampleEntries() {
+            // Load some sample entries to demonstrate the system
+            const sampleEntries = [
+                {
+                    id: 'sample1',
+                    kind: 30403,
+                    pubkey: 'event_pubkey_1',
+                    created_at: Date.now() / 1000 - 3600,
+                    tags: [
+                        ['d', 'bitcoin_cafe_sf'],
+                        ['title', 'Bitcoin Cafe San Francisco'],
+                        ['type', 'business'],
+                        ['category', 'food/restaurant/american'],
+                        ['category', 'bitcoin/merchant'],
+                        ['description', 'First Bitcoin-only cafe in San Francisco'],
+                        ['url', 'https://bitcoincafe.sf'],
+                        ['location', 'San Francisco, CA'],
+                        ['governance', 'collaborative'],
+                        ['owner', 'cafe_owner_pubkey'],
+                        ['relay', 'wss://wot.directory.nostr'],
+                        ['relay', 'wss://bitcoin.wot.nostr'],
+                        ['p', 'cafe_owner_pubkey', '', 'encrypted_key_1'],
+                        ['p', 'manager_pubkey', '', 'encrypted_key_2']
+                    ],
+                    content: '',
+                    _metadata: { governance: 'collaborative', canEdit: false }
+                },
+                {
+                    id: 'sample2', 
+                    kind: 30403,
+                    pubkey: 'event_pubkey_2',
+                    created_at: Date.now() / 1000 - 7200,
+                    tags: [
+                        ['d', 'nostr_devs_pack'],
+                        ['title', 'Essential Nostr Developers'],
+                        ['type', 'follow-pack'],
+                        ['category', 'developers/nostr'],
+                        ['category', 'bitcoin/protocol'],
+                        ['description', 'Must-follow developers building on Nostr'],
+                        ['governance', 'solo'],
+                        ['owner', 'curator_pubkey'],
+                        ['relay', 'wss://dev.wot.nostr'],
+                        ['follow', 'fiatjaf_pubkey', 'wss://relay.com', 'fiatjaf'],
+                        ['follow', 'jb55_pubkey', 'wss://relay.com', 'jb55'],
+                        ['follow', 'vitor_pubkey', 'wss://relay.com', 'vitorpamplona']
+                    ],
+                    content: '',
+                    _metadata: { governance: 'solo', canEdit: false }
+                },
+                {
+                    id: 'sample3',
+                    kind: 30403, 
+                    pubkey: 'event_pubkey_3',
+                    created_at: Date.now() / 1000 - 10800,
+                    tags: [
+                        ['d', 'lightning_wallet'],
+                        ['title', 'Phoenix Lightning Wallet'],
+                        ['type', 'product'],
+                        ['category', 'bitcoin/wallet'],
+                        ['category', 'tech/mobile-app'],
+                        ['description', 'Non-custodial Lightning wallet for Bitcoin'],
+                        ['url', 'https://phoenix.acinq.co'],
+                        ['governance', 'relay-owned'],
+                        ['owner', 'relay_collective'],
+                        ['created-by', 'non-nostr-user'],
+                        ['creator-claim', 'phoenix@acinq.co'],
+                        ['relay', 'wss://wot.directory.nostr'],
+                        ['p', 'relay_manager_1', '', 'encrypted_key']
+                    ],
+                    content: '',
+                    _metadata: { governance: 'relay-owned', canEdit: false }
+                }
+            ];
+            
+            entries = sampleEntries;
+            renderEntries();
+        }
+
+        function renderEntries() {
+            const container = document.getElementById('entries-container');
+            const filteredEntries = getFilteredEntries();
+            
+            if (filteredEntries.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No entries found</p>';
+                return;
+            }
+            
+            container.innerHTML = filteredEntries.map(entry => {
+                const title = getTagValue(entry, 'title');
+                const type = getTagValue(entry, 'type');
+                const description = getTagValue(entry, 'description');
+                const categories = entry.tags.filter(t => t[0] === 'category').map(t => t[1]);
+                const governance = getTagValue(entry, 'governance');
+                const owner = getTagValue(entry, 'owner');
+                const editorCount = entry.tags.filter(t => t[0] === 'p').length;
+                
+                const typeIcon = {
+                    'business': '🏢',
+                    'product': '📱', 
+                    'project': '🚀',
+                    'follow-pack': '👥'
+                }[type] || '📄';
+                
+                const governanceColor = {
+                    'solo': 'bg-blue-100 text-blue-800',
+                    'collaborative': 'bg-green-100 text-green-800', 
+                    'relay-owned': 'bg-purple-100 text-purple-800'
+                }[governance] || 'bg-gray-100 text-gray-800';
+                
+                return `
+                    <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-2xl">${typeIcon}</span>
+                                <div>
+                                    <h3 class="font-semibold text-lg">${title}</h3>
+                                    <p class="text-sm text-gray-600">${type.charAt(0).toUpperCase() + type.slice(1)}</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <span class="px-2 py-1 text-xs rounded-full ${governanceColor}">
+                                    ${governance}
+                                </span>
+                                ${editorCount > 1 ? `<span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700">${editorCount} editors</span>` : ''}
+                            </div>
+                        </div>
+                        
+                        <p class="text-gray-700 mb-3">${description}</p>
+                        
+                        <div class="flex flex-wrap gap-1 mb-3">
+                            ${categories.map(cat => `
+                                <span class="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded">
+                                    ${cat.replace(/\//g, ' → ')}
+                                </span>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="flex items-center justify-between text-sm text-gray-500">
+                            <div>
+                                Created: ${new Date(entry.created_at * 1000).toLocaleDateString()}
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="viewEntry('${entry.id}')" class="text-blue-600 hover:text-blue-800">
+                                    View Details
+                                </button>
+                                ${entry._metadata?.canEdit ? `
+                                    <button onclick="editEntry('${entry.id}')" class="text-green-600 hover:text-green-800">
+                                        Edit
+                                    </button>
+                                ` : ''}
+                                <button onclick="reportEntry('${entry.id}')" class="text-red-600 hover:text-red-800">
+                                    Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getFilteredEntries() {
+            const searchTerm = document.getElementById('search-entries').value.toLowerCase();
+            const typeFilter = document.getElementById('filter-type').value;
+            
+            return entries.filter(entry => {
+                const matchesSearch = !searchTerm || 
+                    getTagValue(entry, 'title').toLowerCase().includes(searchTerm) ||
+                    getTagValue(entry, 'description').toLowerCase().includes(searchTerm);
+                
+                const matchesType = !typeFilter || getTagValue(entry, 'type') === typeFilter;
+                
+                return matchesSearch && matchesType;
+            });
+        }
+
+        function filterEntries() {
+            renderEntries();
+        }
+
+        function getTagValue(event, tagName) {
+            const tag = event.tags.find(t => t[0] === tagName);
+            return tag ? tag[1] : '';
+        }
+
+        function viewEntry(entryId) {
+            const entry = entries.find(e => e.id === entryId);
+            if (!entry) return;
+            
+            const modal = document.getElementById('entry-modal');
+            const content = document.getElementById('modal-content');
+            
+            const title = getTagValue(entry, 'title');
+            const description = getTagValue(entry, 'description');
+            const type = getTagValue(entry, 'type');
+            const url = getTagValue(entry, 'url');
+            const contact = getTagValue(entry, 'contact');
+            const location = getTagValue(entry, 'location');
+            const governance = getTagValue(entry, 'governance');
+            const owner = getTagValue(entry, 'owner');
+            const categories = entry.tags.filter(t => t[0] === 'category').map(t => t[1]);
+            const relays = entry.tags.filter(t => t[0] === 'relay').map(t => t[1]);
+            const editors = entry.tags.filter(t => t[0] === 'p');
+            const follows = entry.tags.filter(t => t[0] === 'follow');
+            
+            const typeIcon = {
+                'business': '🏢',
+                'product': '📱', 
+                'project': '🚀',
+                'follow-pack': '👥'
+            }[type] || '📄';
+
+            content.innerHTML = `
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">${typeIcon}</span>
+                            <div>
+                                <h2 class="text-2xl font-bold">${title}</h2>
+                                <p class="text-gray-600">${type.charAt(0).toUpperCase() + type.slice(1)} • ${governance} governance</p>
+                            </div>
+                        </div>
+                        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="font-medium text-gray-700 mb-2">Description</h3>
+                            <p class="text-gray-900">${description}</p>
+                        </div>
+
+                        ${url ? `
+                        <div>
+                            <h3 class="font-medium text-gray-700 mb-2">Website</h3>
+                            <a href="${url}" target="_blank" class="text-blue-600 hover:text-blue-800">${url}</a>
+                        </div>
+                        ` : ''}
+
+                        ${contact ? `
+                        <div>
+                            <h3 class="font-medium text-gray-700 mb-2">Contact</h3>
+                            <p class="text-gray-900">${contact}</p>
+                        </div>
+                        ` : ''}
+
+                        ${location ? `
+                        <div>
+                            <h3 class="font-medium text-gray-700 mb-2">Location</h3>
+                            <p class="text-gray-900">${location}</p>
+                        </div>
+                        ` : ''}
+
+                        <div>
+                            <h3 class="font-medium text-gray-700 mb-2">Categories</h3>
+                            <div class="flex flex-wrap gap-2">
+                                ${categories.map(cat => `
+                                    <span class="px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-full">
+                                        ${cat.replace(/\//g, ' → ')}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="font-medium text-gray-700 mb-2">WoT Relays</h3>
+                            <div class="space-y-1">
+                                ${relays.map(relay => `
+                                    <div class="text-sm font-mono bg-gray-100 p-2 rounded">${relay}</div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="font-medium text-gray-700 mb-2">Ownership & Collaboration</h3>
+                            <div class="bg-gray-50 p-3 rounded">
+                                <p class="text-sm"><strong>Governance:</strong> ${governance}</p>
+                                <p class="text-sm"><strong>Owner:</strong> ${owner === 'relay_collective' ? 'Relay Collective' : owner.substring(0, 20) + '...'}</p>
+                                <p class="text-sm"><strong>Editors:</strong> ${editors.length} ${editors.length === 1 ? 'editor' : 'editors'}</p>
+                            </div>
+                        </div>
+
+                        ${type === 'follow-pack' && follows.length > 0 ? `
+                        <div>
+                            <h3 class="font-medium text-gray-700 mb-2">Follow Pack Members</h3>
+                            <div class="space-y-2">
+                                ${follows.map(follow => `
+                                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                        <div>
+                                            <span class="font-medium">${follow[3]}</span>
+                                            <span class="text-xs text-gray-500 ml-2">${follow[1].substring(0, 20)}...</span>
+                                        </div>
+                                        <span class="text-xs text-gray-400">${follow[2]}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <div class="pt-4 border-t flex gap-3">
+                            ${entry._metadata?.canEdit ? `
+                                <button onclick="editEntry('${entry.id}')" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                                    Edit Entry
+                                </button>
+                            ` : ''}
+                            <button onclick="reportEntry('${entry.id}')" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                                Report Fraud
+                            </button>
+                            <button onclick="closeModal()" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('entry-modal').classList.add('hidden');
+        }
+
+        function editEntry(entryId) {
+            alert('Edit functionality would open the entry in edit mode');
+            closeModal();
+        }
+
+        function reportEntry(entryId) {
+            const entry = entries.find(e => e.id === entryId);
+            if (!entry) return;
+
+            const reason = prompt('Why are you reporting this entry?\n\nOptions:\n1. Fraud/Fake\n2. Spam\n3. Misleading\n4. Duplicate\n5. Other\n\nEnter reason:');
+            
+            if (reason) {
+                // Create NIP-56 style report event (Kind 1984)
+                const reportEvent = {
+                    kind: 1984,
+                    pubkey: userPubkey || 'anonymous_reporter',
+                    created_at: Math.floor(Date.now() / 1000),
+                    tags: [
+                        ['e', entry.id],
+                        ['a', `30403:${entry.pubkey}:${getTagValue(entry, 'd')}`],
+                        ['report-type', 'fraud'],
+                        ['reason', reason],
+                        ['wot-relay', selectedRelays[0]]
+                    ],
+                    content: `Report submitted for directory entry: ${getTagValue(entry, 'title')}`,
+                    sig: 'report_signature_' + generateRandomKey().substring(0, 16)
+                };
+
+                console.log('Report submitted:', reportEvent);
+                alert('Report submitted successfully. Relay administrators will review this entry.');
+            }
+            
+            closeModal();
+        }
+
+        function generateRandomKey() {
+            return Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('entry-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
