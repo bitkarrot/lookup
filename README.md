@@ -1,6 +1,6 @@
 # Lookup: an autonomous self-organizing self-governing directory using Nostr
 
-## directory general summary
+## nostr distributed directory general summary
 
 - top section revolving advertising people can buy X sats per month or day, could use the classified kind
 - next section is search bar for items

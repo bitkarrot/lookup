@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lookup Directory Index</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 2rem; color: #111; }
+    h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
+    p.desc { color: #555; margin-top: 0; margin-bottom: 1.5rem; }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li { margin: 0; }
+    a { display: block; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 0.5rem; text-decoration: none; color: #0f172a; background: #fff; }
+    a:hover { background: #f8fafc; border-color: #cbd5e1; }
+    small { color: #64748b; }
+    .footer { margin-top: 2rem; color: #64748b; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <h1>Lookup Directory Index</h1>
+  <p class="desc">Links to all files in this repository directory.</p>
+
+  <ul id="file-list">
+    <li><a href="README.md">README.md<br><small>Project overview and directory summary</small></a></li>
+    <li><a href="directory.html">directory.html<br><small>UI prototype for the Nostr Directory</small></a></li>
+    <li><a href="NIP-68-extension.md">NIP-68-extension.md<br><small>Threshold governance extension draft</small></a></li>
+    <li><a href="nip68_threshold_governance.md">nip68_threshold_governance.md<br><small>Alternate NIP-68 threshold governance draft</small></a></li>
+    <li><a href="vitor_draft_68.md">vitor_draft_68.md<br><small>Original NIP-68 shared replaceables draft</small></a></li>
+    <li><a href="nostr.md">nostr.md<br><small>Notes and analysis of SheetStr collaborative logic</small></a></li>
+    <li><a href="prototype.md">prototype.md<br><small>Public/private mode switching explanation</small></a></li>
+    <li><a href="prototype2.md">prototype2.md<br><small>Prototype requirements and constraints</small></a></li>
+    <li><a href="vitor_notes.md">vitor_notes.md<br><small>Reference links and NIP sources</small></a></li>
+  </ul>
+
+  <div class="footer">
+    This index auto-lists files from GitHub when possible. If new files are added and not shown, reload or check GitHub API limits.
+  </div>
+
+  <script>
+    (async function() {
+      // Configuration for GitHub Pages / public repo
+      const owner = 'bitkarrot';
+      const repo = 'lookup';
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/`;
+      const listEl = document.getElementById('file-list');
+
+      try {
+        const res = await fetch(apiUrl, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
+        if (!res.ok) throw new Error('GitHub API error: ' + res.status);
+        const items = await res.json();
+
+        // Filter visible files in repo root, excluding index itself and .git related
+        const hidden = new Set(['.gitignore', '.gitattributes']);
+        const exclude = new Set(['index.html']);
+        const allowedTypes = new Set(['file']);
+
+        // Build a map of existing static entries to avoid duplicates
+        const existing = new Set(
+          Array.from(listEl.querySelectorAll('a'))
+            .map(a => a.getAttribute('href'))
+        );
+
+        const fragment = document.createDocumentFragment();
+
+        items
+          .filter(item => allowedTypes.has(item.type))
+          .filter(item => !item.name.startsWith('.') && !hidden.has(item.name) && !exclude.has(item.name))
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .forEach(item => {
+            if (existing.has(item.name)) return; // skip if already in static list
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = item.name;
+            a.innerHTML = `${item.name}<br><small>${item.size != null ? (item.size + ' bytes') : ''}</small>`;
+            li.appendChild(a);
+            fragment.appendChild(li);
+          });
+
+        // Append dynamic entries after static ones
+        listEl.appendChild(fragment);
+      } catch (err) {
+        // Silently degrade to static list
+        console.warn('Could not load dynamic file list from GitHub:', err);
+      }
+    })();
+  </script>
+</body>
+</html>
