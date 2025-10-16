@@ -28,11 +28,15 @@ once we approve of the design using correct nostr NIPs for the implementation, t
 
 ## summarize the OTHER files in this directory
 
-- **NIP-68-extension.md**: Draft spec extending NIP-68 with threshold governance for shared replaceables, introducing editor lists, thresholds for content vs governance actions, and example tag structures/workflows.
-- **nip68_threshold_governance.md**: Alternative draft of the same threshold governance proposal for NIP-68 with similar concepts and examples (editor tags, threshold tags, key distribution, and flow).
-- **vitor_draft_68.md**: Original NIP-68 shared replaceables draft describing event-owned keys, encrypted sharing via `p` tags, and an encrypted shared replaceables model separating viewing and editing keys.
-- **nostr.md**: Notes and analysis of SheetStr’s collaborative spreadsheet logic using Nostr (kind 35337), including relay usage, privacy modes (public vs encrypted), and permission model.
-- **prototype.md**: Explanation of how SheetStr toggles public/private modes, detailing how tags/content are transformed, permissions updated, and implications during conversion.
-- **prototype2.md**: Requirements brief for a directory prototype addressing issues like non‑Nostr submissions (relay-owned), max 5 editors, improved entry structure, and multiple WoT relays.
+- **nostr-directory-design.md**: Complete Nostr-based directory system design specification using proper NIPs for advertising, entries, categories, moderation, and revenue model.
 - **directory.html**: UI prototype for a Nostr Directory client (TailwindCSS) with entry creation, non‑Nostr mode, editor slot limits, relay selection (multi‑WoT), and category builder.
-- **vitor_notes.md**: Short reference notes linking an RFC issue and relevant NIPs/NIP-68 draft sources.
+
+### Files in OtherIdeas/ subdirectory
+
+- **[OtherIdeas/NIP-68-extension.md](OtherIdeas/NIP-68-extension.md)**: Draft spec extending NIP-68 with threshold governance for shared replaceables, introducing editor lists, thresholds for content vs governance actions, and example tag structures/workflows.
+- **[OtherIdeas/nip68_threshold_governance.md](OtherIdeas/nip68_threshold_governance.md)**: Alternative draft of the same threshold governance proposal for NIP-68 with similar concepts and examples (editor tags, threshold tags, key distribution, and flow).
+- **[OtherIdeas/vitor_draft_68.md](OtherIdeas/vitor_draft_68.md)**: Original NIP-68 shared replaceables draft describing event-owned keys, encrypted sharing via `p` tags, and an encrypted shared replaceables model separating viewing and editing keys.
+- **[OtherIdeas/nostr.md](OtherIdeas/nostr.md)**: Notes and analysis of SheetStr's collaborative spreadsheet logic using Nostr (kind 35337), including relay usage, privacy modes (public vs encrypted), and permission model.
+- **[OtherIdeas/prototype.md](OtherIdeas/prototype.md)**: Explanation of how SheetStr toggles public/private modes, detailing how tags/content are transformed, permissions updated, and implications during conversion.
+- **[OtherIdeas/prototype2.md](OtherIdeas/prototype2.md)**: Requirements brief for a directory prototype addressing issues like non‑Nostr submissions (relay-owned), max 5 editors, improved entry structure, and multiple WoT relays.
+- **[OtherIdeas/vitor_notes.md](OtherIdeas/vitor_notes.md)**: Short reference notes linking an RFC issue and relevant NIPs/NIP-68 draft sources.
