@@ -28,7 +28,3 @@ However, the existing template is a good starting point for a directory
 - **prototype2.md**: Requirements brief for a directory prototype addressing issues like non‑Nostr submissions (relay-owned), max 5 editors, improved entry structure, and multiple WoT relays.
 - **directory.html**: UI prototype for a Nostr Directory client (TailwindCSS) with entry creation, non‑Nostr mode, editor slot limits, relay selection (multi‑WoT), and category builder.
 - **vitor_notes.md**: Short reference notes linking an RFC issue and relevant NIPs/NIP-68 draft sources.
-
-## prototype ideas. 
-
-summarize files in this directory
