@@ -5,8 +5,6 @@
 
 Ok based on the Nostr MCP can you please design for me a directory with the following specifications: 
 
-# Lookup: an autonomous self-organizing self-governing directory using Nostr
-
 - top section of directory will have revolving advertising cards. each card can expand into a pop up with more detail.  nostr users can buy ads for X sats per month or day. Consider using the classified nostr kind for this.
 - next section below the advertising section is a search bar for items in the directory. 
 - below this search bar, we should see tabs for a nostr apps directory, nostr business directory, a bitcoin business directory, and a follow packs directory
