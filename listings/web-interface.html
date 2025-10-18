@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Directory Entry</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .auth-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .auth-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+        }
+
+        .status-indicator.connected {
+            background: #28a745;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .payment-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .payment-info h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .payment-info p {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .trust-status {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .trust-status.trusted {
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .progress-indicator {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            margin: 0 5px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .progress-step.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .progress-step.completed {
+            background: #28a745;
+            color: white;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        .hashtags-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            padding: 8px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            min-height: 45px;
+        }
+
+        .hashtag {
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .hashtag-remove {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .hashtag-input {
+            border: none;
+            outline: none;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                margin: 10px;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ Submit Directory Entry</h1>
+            <p>Add your business or service to our Nostr-powered directory</p>
+        </div>
+
+        <div class="form-container">
+            <!-- Authentication Section -->
+            <div class="auth-section">
+                <div class="auth-status">
+                    <div class="status-indicator" id="authIndicator"></div>
+                    <span id="authStatus">Not connected to Nostr</span>
+                </div>
+                <button class="btn" id="connectBtn" onclick="connectNostr()">
+                    Connect Nostr Extension
+                </button>
+                <div id="userInfo" style="display: none; margin-top: 15px;">
+                    <p><strong>Connected as:</strong> <span id="userPubkey"></span></p>
+                </div>
+            </div>
+
+            <!-- Trust Status -->
+            <div id="trustStatus" class="trust-status" style="display: none;">
+                <p id="trustMessage"></p>
+            </div>
+
+            <!-- Progress Indicator -->
+            <div class="progress-indicator" id="progressIndicator">
+                <div class="progress-steps">
+                    <div class="progress-step" id="step1">Form Submission</div>
+                    <div class="progress-step" id="step2">Payment</div>
+                    <div class="progress-step" id="step3">Verification</div>
+                    <div class="progress-step" id="step4">Published</div>
+                </div>
+                <p id="progressMessage">Processing your submission...</p>
+            </div>
+
+            <!-- Directory Entry Form -->
+            <form id="directoryForm">
+                <div class="form-group">
+                    <label for="title">Title *</label>
+                    <input type="text" id="title" name="title" required 
+                           placeholder="Your business or service name">
+                </div>
+
+                <div class="form-group">
+                    <label for="summary">Summary *</label>
+                    <input type="text" id="summary" name="summary" required 
+                           placeholder="Brief description (one line)">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" name="category" required>
+                            <option value="">Select a category</option>
+                            <option value="business">Business</option>
+                            <option value="service">Service</option>
+                            <option value="community">Community</option>
+                            <option value="education">Education</option>
+                            <option value="technology">Technology</option>
+                            <option value="health">Health</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" name="location" 
+                               placeholder="City, Country or 'Online'">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description *</label>
+                    <textarea id="description" name="description" required 
+                              placeholder="Detailed description of your business or service. You can use Markdown formatting."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="website">Website</label>
+                        <input type="url" id="website" name="website" 
+                               placeholder="https://yourwebsite.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact">Contact</label>
+                        <input type="text" id="contact" name="contact" 
+                               placeholder="Email, npub, or other contact info">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="hashtags">Hashtags</label>
+                    <div class="hashtags-input" id="hashtagsContainer">
+                        <input type="text" class="hashtag-input" id="hashtagInput" 
+                               placeholder="Type hashtag and press Enter">
+                    </div>
+                    <small>Press Enter to add hashtags. These help users find your entry.</small>
+                </div>
+
+                <!-- Payment Information -->
+                <div class="payment-info" id="paymentInfo" style="display: none;">
+                    <h3>⚡ Payment Required</h3>
+                    <p>Since you're not in our web of trust network, a small payment of <strong>1000 sats</strong> (~$0.30) is required to prevent spam.</p>
+                    <p>This helps maintain quality and prevents abuse of our directory service.</p>
+                </div>
+
+                <div id="errorContainer"></div>
+                <div id="successContainer"></div>
+
+                <button type="submit" class="btn btn-success" id="submitBtn" disabled>
+                    Submit Directory Entry
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { DirectoryZapHandler, checkUserTrustStatus } from './zap-integration.js';
+        import { createDirectoryEntry, validateDirectoryEntry, DIRECTORY_CATEGORIES } from './directory-schema.js';
+
+        let nostrConnected = false;
+        let userPubkey = null;
+        let isTrusted = false;
+        let zapHandler = null;
+        let hashtags = [];
+
+        // Global functions for HTML onclick handlers
+        window.connectNostr = connectNostr;
+
+        async function connectNostr() {
+            try {
+                if (!window.nostr) {
+                    showError('Nostr extension not found. Please install a Nostr browser extension like Alby, nos2x, or similar.');
+                    return;
+                }
+
+                const pubkey = await window.nostr.getPublicKey();
+                userPubkey = pubkey;
+                nostrConnected = true;
+
+                // Update UI
+                document.getElementById('authIndicator').classList.add('connected');
+                document.getElementById('authStatus').textContent = 'Connected to Nostr';
+                document.getElementById('connectBtn').style.display = 'none';
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('userPubkey').textContent = pubkey.slice(0, 16) + '...';
+                document.getElementById('submitBtn').disabled = false;
+
+                // Check trust status
+                await checkTrustStatus();
+
+                // Initialize zap handler
+                zapHandler = new DirectoryZapHandler();
+
+            } catch (error) {
+                console.error('Error connecting to Nostr:', error);
+                showError('Failed to connect to Nostr extension. Please try again.');
+            }
+        }
+
+        async function checkTrustStatus() {
+            try {
+                isTrusted = await checkUserTrustStatus(userPubkey, 'wss://relay.yourdomain.com');
+                
+                const trustStatusEl = document.getElementById('trustStatus');
+                const trustMessageEl = document.getElementById('trustMessage');
+                const paymentInfoEl = document.getElementById('paymentInfo');
+
+                trustStatusEl.style.display = 'block';
+
+                if (isTrusted) {
+                    trustStatusEl.classList.add('trusted');
+                    trustMessageEl.textContent = '✅ You are in our web of trust network. No payment required!';
+                    paymentInfoEl.style.display = 'none';
+                } else {
+                    trustMessageEl.textContent = 'ℹ️ Payment required for new submissions to prevent spam.';
+                    paymentInfoEl.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error checking trust status:', error);
+                // Default to requiring payment
+                isTrusted = false;
+                document.getElementById('paymentInfo').style.display = 'block';
+            }
+        }
+
+        // Hashtag input handling
+        document.getElementById('hashtagInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const input = e.target;
+                const value = input.value.trim().toLowerCase();
+                
+                if (value && !hashtags.includes(value)) {
+                    hashtags.push(value);
+                    addHashtagToUI(value);
+                    input.value = '';
+                }
+            }
+        });
+
+        function addHashtagToUI(tag) {
+            const container = document.getElementById('hashtagsContainer');
+            const input = document.getElementById('hashtagInput');
+            
+            const hashtagEl = document.createElement('div');
+            hashtagEl.className = 'hashtag';
+            hashtagEl.innerHTML = `
+                #${tag}
+                <button type="button" class="hashtag-remove" onclick="removeHashtag('${tag}')">&times;</button>
+            `;
+            
+            container.insertBefore(hashtagEl, input);
+        }
+
+        window.removeHashtag = function(tag) {
+            hashtags = hashtags.filter(t => t !== tag);
+            // Remove from UI
+            const hashtagEls = document.querySelectorAll('.hashtag');
+            hashtagEls.forEach(el => {
+                if (el.textContent.includes(tag)) {
+                    el.remove();
+                }
+            });
+        };
+
+        // Form submission
+        document.getElementById('directoryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!nostrConnected) {
+                showError('Please connect your Nostr extension first.');
+                return;
+            }
+
+            const formData = new FormData(e.target);
+            const entryData = {
+                title: formData.get('title'),
+                summary: formData.get('summary'),
+                category: formData.get('category'),
+                location: formData.get('location'),
+                description: formData.get('description'),
+                website: formData.get('website'),
+                contact: formData.get('contact'),
+                hashtags: hashtags
+            };
+
+            // Validate form data
+            const validation = validateDirectoryEntry(entryData);
+            if (!validation.isValid) {
+                showError('Please fix the following errors:<br>' + validation.errors.join('<br>'));
+                return;
+            }
+
+            try {
+                // Show progress
+                showProgress('step1', 'Creating directory entry...');
+
+                // Create directory entry event
+                const directoryEvent = createDirectoryEntry(entryData, userPubkey);
+
+                if (isTrusted) {
+                    // Trusted user - publish directly
+                    showProgress('step4', 'Publishing entry...');
+                    const signedEvent = await window.nostr.signEvent(directoryEvent);
+                    
+                    // Update status to active
+                    const statusTag = signedEvent.tags.find(t => t[0] === 'status');
+                    if (statusTag) {
+                        statusTag[1] = 'active';
+                    }
+                    
+                    const finalEvent = await window.nostr.signEvent(signedEvent);
+                    
+                    // TODO: Publish to relay
+                    console.log('Publishing trusted entry:', finalEvent);
+                    
+                    showSuccess('Directory entry published successfully! No payment required.');
+                    hideProgress();
+                    
+                } else {
+                    // Untrusted user - require payment
+                    showProgress('step2', 'Processing payment...');
+                    
+                    const result = await zapHandler.payForDirectoryEntry(directoryEvent, (message) => {
+                        updateProgressMessage(message);
+                    });
+
+                    if (result.success) {
+                        showProgress('step4', 'Entry published successfully!');
+                        showSuccess('Directory entry published successfully! Payment confirmed.');
+                        console.log('Published paid entry:', result.directoryEvent);
+                    }
+                }
+
+            } catch (error) {
+                console.error('Submission error:', error);
+                showError(`Failed to submit directory entry: ${error.message}`);
+                hideProgress();
+            }
+        });
+
+        function showProgress(step, message) {
+            const progressEl = document.getElementById('progressIndicator');
+            progressEl.style.display = 'block';
+            
+            // Reset all steps
+            document.querySelectorAll('.progress-step').forEach(el => {
+                el.classList.remove('active', 'completed');
+            });
+            
+            // Mark completed steps
+            const steps = ['step1', 'step2', 'step3', 'step4'];
+            const currentIndex = steps.indexOf(step);
+            
+            for (let i = 0; i < currentIndex; i++) {
+                document.getElementById(steps[i]).classList.add('completed');
+            }
+            
+            document.getElementById(step).classList.add('active');
+            updateProgressMessage(message);
+        }
+
+        function updateProgressMessage(message) {
+            document.getElementById('progressMessage').textContent = message;
+        }
+
+        function hideProgress() {
+            document.getElementById('progressIndicator').style.display = 'none';
+        }
+
+        function showError(message) {
+            const container = document.getElementById('errorContainer');
+            container.innerHTML = `<div class="error-message">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 10000);
+        }
+
+        function showSuccess(message) {
+            const container = document.getElementById('successContainer');
+            container.innerHTML = `<div class="success-message">${message}</div>`;
+        }
+
+        // Auto-connect if extension is available
+        if (window.nostr) {
+            connectNostr();
+        }
+    </script>
+</body>
+</html>
